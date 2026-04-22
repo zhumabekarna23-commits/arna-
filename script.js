@@ -1,47 +1,41 @@
-body {
-  font-family: Arial;
-  background: #1e1e2f;
-  color: white;
-  text-align: center;
-}
+async function sendMessage() {
+  const input = document.getElementById("input");
+  const apiKey = document.getElementById("apiKey").value;
+  const chat = document.getElementById("chat");
 
-.chat-box {
-  width: 80%;
-  height: 400px;
-  margin: 20px auto;
-  background: #2a2a40;
-  border-radius: 10px;
-  padding: 10px;
-  overflow-y: auto;
-  text-align: left;
-}
+  if (!input.value || !apiKey) {
+    alert("Сұрақ пен API key енгіз!");
+    return;
+  }
 
-.message {
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-}
+  // user message
+  let userMsg = document.createElement("div");
+  userMsg.className = "message user";
+  userMsg.innerText = input.value;
+  chat.appendChild(userMsg);
 
-.user {
-  background: #4caf50;
-  text-align: right;
-}
+  // API сұраныс
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + apiKey,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llama3-8b-8192",
+      messages: [
+        { role: "user", content: input.value }
+      ]
+    })
+  });
 
-.ai {
-  background: #444;
-}
+  const data = await response.json();
 
-input {
-  padding: 10px;
-  width: 60%;
-  border-radius: 10px;
-  border: none;
-}
+  let aiMsg = document.createElement("div");
+  aiMsg.className = "message ai";
+  aiMsg.innerText = data.choices[0].message.content;
+  chat.appendChild(aiMsg);
 
-button {
-  padding: 10px;
-  border-radius: 10px;
-  background: orange;
-  border: none;
-  cursor: pointer;
+  input.value = "";
+  chat.scrollTop = chat.scrollHeight;
 }
